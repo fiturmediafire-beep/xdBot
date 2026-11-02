@@ -10,9 +10,9 @@
 
 $execute {
 
-  geode::listenForSettingChanges("macro_accuracy", +[](std::string value) {
+  geode::listenForSettingChanges<std::string>("macro_accuracy", [](std::string value) {
     auto& g = Global::get();
-    
+
     g.frameFixes = false;
     g.inputFixes = false;
 
@@ -20,15 +20,15 @@ $execute {
     if (value == "Input Fixes") g.inputFixes = true;
   });
 
-  geode::listenForSettingChanges("frame_fixes_limit", +[](int64_t value) {
+  geode::listenForSettingChanges<int64_t>("frame_fixes_limit", [](int64_t value) {
     Global::get().frameFixesLimit = value;
   });
 
-  geode::listenForSettingChanges("lock_delta", +[](bool value) {
+  geode::listenForSettingChanges<bool>("lock_delta", [](bool value) {
     Global::get().lockDelta = value;
   });
 
-  geode::listenForSettingChanges("auto_stop_playing", +[](bool value) {
+  geode::listenForSettingChanges<bool>("auto_stop_playing", [](bool value) {
     Global::get().stopPlaying = value;
   });
 
