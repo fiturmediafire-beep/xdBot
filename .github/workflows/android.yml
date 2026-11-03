@@ -28,10 +28,16 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Peek bindings
+      - name: Drop PlayerObject members missing in new bindings
         run: |
           git clone --depth 1 https://github.com/TheSillyDoggo/bindings bindings-peek
-          grep -rn -A60 "class CCTextInputNode" bindings-peek/bindings/2.2091 || true
+          BRO=bindings-peek/bindings/2.2091/GeometryDash.bro
+          for m in $(grep -oE 'player->m_[A-Za-z0-9_]+' src/practice_fixes/player.cpp | sed 's/player->//' | sort -u); do
+            if ! grep -qE "\b$m\b" "$BRO"; then
+              echo "REMOVED: $m"
+              sed -i -E "/player->$m\b/d" src/practice_fixes/player.cpp
+            fi
+          done
           rm -rf bindings-peek
 
       - name: Port Geode API
@@ -42,6 +48,7 @@ jobs:
             -e 's/geode::Popup</PopupCompat</g' \
             -e 's/\bPopup<>\*/Popup*/g' \
             -e 's/\bPopup<>/PopupCompat<>/g' \
+            -e 's/->m_placeholderLabel/->getTextLabel()/g' \
             -e 's/setSettingValue<std::filesystem::path>/setSettingValue<asp::fs::Path>/g' \
             -e 's/openFolder\(Mod::get\(\)->getSettingValue<std::filesystem::path>/openFolder(Mod::get()->getSettingValue<asp::fs::Path>/g' \
             -e 's/file::openFolder\(path\)/file::openFolder(path.string())/g' \
@@ -63,8 +70,6 @@ jobs:
             -e 's/void processCommands\(float dt\)/void processCommands(float dt, bool isHalfTick, bool isLastTick)/g' \
             -e 's/GJBaseGameLayer::processCommands\(dt\)/GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick)/g' \
             -e 's/CCARRAY_FOREACH\(([A-Za-z_0-9]+), ([A-Za-z_0-9]+)\) \{/for (auto \2_it : CCArrayExt<CCObject*>(\1)) { \2 = static_cast<decltype(\2)>(\2_it);/g'
-
-          sed -i -E 's/layer->keyBackClicked\(\);/static_cast<FLAlertLayer*>(layer)->keyBackClicked();/g' src/ui/load_macro_layer.cpp
 
           sed -i -E 's/static void setBackgroundColor\(cocos2d::extension::CCScale9Sprite\* bg\);/static void setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg);\n    static void setBackgroundColor(geode::NineSlice* bg);/' src/utils/utils.hpp
 
