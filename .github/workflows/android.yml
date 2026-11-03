@@ -39,7 +39,8 @@ jobs:
             -e 's/setSettingValue<std::filesystem::path>/setSettingValue<asp::fs::Path>/g' \
             -e 's/getSettingValue<std::filesystem::path>\(([^()]*)\)/getSettingValue<asp::fs::Path>(\1).toStdPath().unwrapOrDefault()/g' \
             -e 's/, public TextInputDelegate//g' \
-            -e 's/\bgd::(vector|string|map|set|unordered_map|unordered_set|list)\b/std::\1/g'
+            -e 's/\bgd::(vector|string|map|set|unordered_map|unordered_set|list)\b/std::\1/g' \
+            -e 's/dispatchKeyboardMSG\(([^(),]+,[^(),]+,[^(),]+)\)/dispatchKeyboardMSG(\1, 0.0)/g'
 
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
