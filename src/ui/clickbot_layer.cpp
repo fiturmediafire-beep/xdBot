@@ -402,11 +402,15 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 	textFilter.files = { "*.mp3", "*.ogg" };
 	fileOptions.filters.push_back(textFilter);
 
-	file::pick(file::PickMode::OpenFile, { Mod::get()->getResourcesDir(), { textFilter } }).then([this](Result<std::optional<asp::fs::Path>>* res) {
-		if (res->isOk()) {
-			auto optPath = res->unwrapOrDefault();
-			if (!optPath.has_value()) return;
-			std::filesystem::path path = optPath.value().toStdPath().unwrapOrDefault();
+	geode::async::spawn(
+		file::pick(file::PickMode::OpenFile, { Mod::get()->getResourcesDir(), { textFilter } }),
+		[this](geode::Result<std::optional<asp::fs::Path>> res) {
+			if (!res.isOk()) return;
+
+			std::optional<asp::fs::Path> picked = res.unwrapOrDefault();
+			if (!picked.has_value()) return;
+
+			std::filesystem::path path = picked->toStdPath().unwrapOrDefault();
 
 			filenameLabel->setString(path.filename().string().c_str());
 
@@ -415,7 +419,7 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 
 			static_cast<ClickbotLayer*>(clickbotLayer)->updateLabels();
 		}
-		});
+	);
 }
 
 void ClickSettingsLayer::onRestore(CCObject*) {
