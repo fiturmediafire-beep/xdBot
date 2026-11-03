@@ -37,7 +37,7 @@ jobs:
             -e 's/\bPopup<>\*/Popup*/g' \
             -e 's/\bPopup<>/PopupCompat<>/g' \
             -e 's/setSettingValue<std::filesystem::path>/setSettingValue<asp::fs::Path>/g' \
-            -e 's/getSettingValue<std::filesystem::path>\(([^()]*)\)/getSettingValue<asp::fs::Path>(\1).toStdPath()/g' \
+            -e 's/getSettingValue<std::filesystem::path>\(([^()]*)\)/getSettingValue<asp::fs::Path>(\1).toStdPath().unwrapOrDefault()/g' \
             -e 's/, public TextInputDelegate//g' \
             -e 's/\bgd::(vector|string|map|set|unordered_map|unordered_set|list)\b/std::\1/g'
 
