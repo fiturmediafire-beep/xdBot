@@ -2,6 +2,7 @@
 
 #include <Geode/Geode.hpp>
 // #include <Geode/loader/SettingEvent.hpp>
+#include <asp/fs/std.hpp>
 
 #include <string>
 #include <thread>
