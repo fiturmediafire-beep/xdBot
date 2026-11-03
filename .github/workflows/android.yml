@@ -35,7 +35,8 @@ jobs:
             -e 's/geode::Popup<>/PopupCompat<>/g' \
             -e 's/geode::Popup</PopupCompat</g' \
             -e 's/\bPopup<>\*/Popup*/g' \
-            -e 's/\bPopup<>/PopupCompat<>/g'
+            -e 's/\bPopup<>/PopupCompat<>/g' \
+            -e 's/(get|set)SettingValue<std::filesystem::path>/\1SettingValue<asp::fs::Path>/g'
 
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
