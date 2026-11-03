@@ -3,6 +3,7 @@
 #include "macro_editor.hpp"
 
 #include <Geode/modify/CCMenu.hpp>
+#include <Geode/utils/async.hpp>
 
 class $modify(CCMenu) {
 	virtual bool ccTouchBegan(cocos2d::CCTouch* touch, cocos2d::CCEvent* event) {
@@ -144,9 +145,15 @@ void LoadMacroLayer::onImportMacro(CCObject*) {
 	textFilter.files = { "*.gdr", "*.xd", "*.json" };
 	fileOptions.filters.push_back(textFilter);
 
-	file::pick(file::PickMode::OpenFile, { dirs::getGameDir(), { textFilter } }).listen([this](Result<std::filesystem::path>* res) {
-		if (res->isOk()) {
-			std::filesystem::path path = res->unwrapOrDefault();
+	geode::async::spawn(
+		file::pick(file::PickMode::OpenFile, { dirs::getGameDir(), { textFilter } }),
+		[this](geode::Result<std::optional<asp::fs::Path>> res) {
+			if (!res.isOk()) return;
+
+			std::optional<asp::fs::Path> picked = res.unwrapOrDefault();
+			if (!picked.has_value()) return;
+
+			std::filesystem::path path = picked->toStdPath().unwrapOrDefault();
 
 			auto& g = Global::get();
 			Macro tempMacro;
@@ -198,7 +205,7 @@ void LoadMacroLayer::onImportMacro(CCObject*) {
 
 			pathString += ".gdr.json";
 
-			std::ofstream f2(Utils::widen(pathString), std::ios::binary);
+			std::ofstream f2(pathString, std::ios::binary);
 			auto data = tempMacro.exportData(true);
 
 			f2.write(reinterpret_cast<const char*>(data.data()), data.size());
@@ -211,7 +218,7 @@ void LoadMacroLayer::onImportMacro(CCObject*) {
 
 			Notification::create("Macro Imported", NotificationIcon::Success)->show();
 		}
-		});
+	);
 }
 
 bool LoadMacroLayer::setup(geode::Popup<>* layer, geode::Popup<>* layer2, bool autosaves) {
@@ -414,7 +421,13 @@ void LoadMacroLayer::addList(bool refresh, float prevScroll) {
 	cocos2d::CCSize winSize = cocos2d::CCDirector::sharedDirector()->getWinSize();
 
 	std::filesystem::path path = Mod::get()->getSettingValue<std::filesystem::path>(isAutosaves ? "autosaves_folder" : "macros_folder");
-	std::vector<std::filesystem::path> macros = file::readDirectory(path).unwrapOrDefault();
+
+	std::vector<std::filesystem::path> macros;
+	{
+		std::error_code ec;
+		for (std::filesystem::directory_iterator it(path, ec), end; !ec && it != end; it.increment(ec))
+			macros.push_back(it->path());
+	}
 
 	CCArray* cells = CCArray::create();
 
@@ -715,7 +728,7 @@ void MacroCell::handleLoad() {
 	RecordLayer* newLayer = nullptr;
 
 	if (RecordLayer* layer = typeinfo_cast<RecordLayer*>(menuLayer)) {
-		layer->keyBackClicked();
+		static_cast<FLAlertLayer*>(layer)->keyBackClicked();
 		newLayer = RecordLayer::openMenu(true);
 	}
 
