@@ -28,6 +28,15 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Port Popup API
+        run: |
+          find src -type f \( -name '*.hpp' -o -name '*.cpp' \) -print0 | xargs -0 sed -i -E \
+            -e 's/geode::Popup<>\*/geode::Popup*/g' \
+            -e 's/geode::Popup<>/PopupCompat<>/g' \
+            -e 's/geode::Popup</PopupCompat</g' \
+            -e 's/\bPopup<>\*/Popup*/g' \
+            -e 's/\bPopup<>/PopupCompat<>/g'
+
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
         with:
