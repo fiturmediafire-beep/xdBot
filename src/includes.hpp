@@ -23,7 +23,7 @@ protected:
     virtual bool setup(Args... args) = 0;
 
 public:
-    bool initAnchored(float width, float height, Args... args, const char* bg = "GJ_square01.png") {
+    bool initAnchored(float width, float height, Args... args, const char* bg = "GJ_square01.png", CCRect bgRect = CCRect(0, 0, 0, 0)) {
         if (!geode::Popup::init(width, height, bg))
             return false;
 
