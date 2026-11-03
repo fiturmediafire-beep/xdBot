@@ -890,7 +890,7 @@ void MacroEditLayer::onSave(CCObject*) {
             CCObject* child;
             CCARRAY_FOREACH(children, child) {
                 if (RecordLayer* layer = typeinfo_cast<RecordLayer*>(child)) {
-                    layer->keyBackClicked();
+                    static_cast<FLAlertLayer*>(layer)->keyBackClicked();
                     break;
                 }
             }
