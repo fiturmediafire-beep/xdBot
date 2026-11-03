@@ -28,6 +28,12 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Peek bindings
+        run: |
+          git clone --depth 1 https://github.com/TheSillyDoggo/bindings bindings-peek
+          grep -rn -A60 "class CCTextInputNode" bindings-peek/bindings/2.2091 || true
+          rm -rf bindings-peek
+
       - name: Port Geode API
         run: |
           find src -type f \( -name '*.hpp' -o -name '*.cpp' \) -print0 | xargs -0 sed -i -E \
@@ -38,8 +44,9 @@ jobs:
             -e 's/\bPopup<>/PopupCompat<>/g' \
             -e 's/setSettingValue<std::filesystem::path>/setSettingValue<asp::fs::Path>/g' \
             -e 's/openFolder\(Mod::get\(\)->getSettingValue<std::filesystem::path>/openFolder(Mod::get()->getSettingValue<asp::fs::Path>/g' \
+            -e 's/file::openFolder\(path\)/file::openFolder(path.string())/g' \
             -e 's/getSettingValue<std::filesystem::path>\(([^()]*)\)/getSettingValue<asp::fs::Path>(\1).toStdPath().unwrapOrDefault()/g' \
-            -e 's/std::filesystem::path ([A-Za-z_0-9]+) = ([^;]*(getSaveDir|getConfigDir|getGameDir)\(\)[^;]*);/std::filesystem::path \1 = (\2).toStdPath().unwrapOrDefault();/g' \
+            -e 's/std::filesystem::path ([A-Za-z_0-9]+) = ([^;]*(getSaveDir|getConfigDir|getGameDir|getResourcesDir)\(\)[^;]*);/std::filesystem::path \1 = (\2).toStdPath().unwrapOrDefault();/g' \
             -e 's/, public TextInputDelegate//g' \
             -e 's/\bgd::(vector|string|map|set|unordered_map|unordered_set|list)\b/std::\1/g' \
             -e 's/bool dispatchKeyboardMSG\(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat\)/bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double timestamp)/g' \
@@ -47,12 +54,17 @@ jobs:
             -e 's/dispatchKeyboardMSG\(enumKeyCodes::KEY_Space, (false|true), (false|true)\)/dispatchKeyboardMSG(enumKeyCodes::KEY_Space, \1, \2, 0.0)/g' \
             -e 's/createDirectoryAll\(([A-Za-z_0-9]+)\)/createDirectoryAll(\1.string())/g' \
             -e 's/std::ofstream f\(widePath, std::ios::binary\);/std::ofstream f(path, std::ios::binary);/g' \
+            -e 's/std::ofstream f2\(Utils::widen\(pathString\), std::ios::binary\);/std::ofstream f2(pathString, std::ios::binary);/g' \
             -e 's/std::ifstream file\(Utils::widen\(path\.string\(\)\)\);/std::ifstream file(path.string());/g' \
+            -e 's/listenForSettingChanges\("frame_offset"/listenForSettingChanges<int64_t>("frame_offset"/g' \
+            -e 's/listenForSettingChanges\("background_color"/listenForSettingChanges<cocos2d::ccColor3B>("background_color"/g' \
             -e 's/bool init\(GJGameLevel ?\* ?level, bool b1, bool b2\)/bool init(GJGameLevel* level, bool b1)/g' \
             -e 's/PlayLayer::init\(level, b1, b2\)/PlayLayer::init(level, b1)/g' \
             -e 's/void processCommands\(float dt\)/void processCommands(float dt, bool isHalfTick, bool isLastTick)/g' \
             -e 's/GJBaseGameLayer::processCommands\(dt\)/GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick)/g' \
             -e 's/CCARRAY_FOREACH\(([A-Za-z_0-9]+), ([A-Za-z_0-9]+)\) \{/for (auto \2_it : CCArrayExt<CCObject*>(\1)) { \2 = static_cast<decltype(\2)>(\2_it);/g'
+
+          sed -i -E 's/layer->keyBackClicked\(\);/static_cast<FLAlertLayer*>(layer)->keyBackClicked();/g' src/ui/load_macro_layer.cpp
 
           sed -i -E 's/static void setBackgroundColor\(cocos2d::extension::CCScale9Sprite\* bg\);/static void setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg);\n    static void setBackgroundColor(geode::NineSlice* bg);/' src/utils/utils.hpp
 
