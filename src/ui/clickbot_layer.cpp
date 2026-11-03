@@ -402,9 +402,11 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 	textFilter.files = { "*.mp3", "*.ogg" };
 	fileOptions.filters.push_back(textFilter);
 
-	file::pick(file::PickMode::OpenFile, { Mod::get()->getResourcesDir(), { textFilter } }).listen([this](Result<std::filesystem::path>* res) {
+	file::pick(file::PickMode::OpenFile, { Mod::get()->getResourcesDir(), { textFilter } }).then([this](Result<std::optional<asp::fs::Path>>* res) {
 		if (res->isOk()) {
-			std::filesystem::path path = res->unwrapOrDefault();
+			auto optPath = res->unwrapOrDefault();
+			if (!optPath.has_value()) return;
+			std::filesystem::path path = optPath.value().toStdPath().unwrapOrDefault();
 
 			filenameLabel->setString(path.filename().string().c_str());
 
