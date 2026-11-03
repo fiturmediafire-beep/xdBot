@@ -15,6 +15,21 @@
 
 using namespace geode::prelude;
 
+// Kompatibilitas: Popup<Args...> gaya Geode v4 di atas Popup non-template Geode v5/v6
+template <class... Args>
+class PopupCompat : public geode::Popup {
+protected:
+    virtual bool setup(Args... args) = 0;
+
+public:
+    bool initAnchored(float width, float height, Args... args, const char* bg = "GJ_square01.png") {
+        if (!geode::Popup::init(width, height, bg))
+            return false;
+
+        return this->setup(std::forward<Args>(args)...);
+    }
+};
+
 const int seedAddr = 0x6a4e20;
 
 const int indexButton[6] = { 1, 2, 3, 1, 2, 3 };
