@@ -37,11 +37,36 @@ jobs:
             -e 's/\bPopup<>\*/Popup*/g' \
             -e 's/\bPopup<>/PopupCompat<>/g' \
             -e 's/setSettingValue<std::filesystem::path>/setSettingValue<asp::fs::Path>/g' \
+            -e 's/openFolder\(Mod::get\(\)->getSettingValue<std::filesystem::path>/openFolder(Mod::get()->getSettingValue<asp::fs::Path>/g' \
             -e 's/getSettingValue<std::filesystem::path>\(([^()]*)\)/getSettingValue<asp::fs::Path>(\1).toStdPath().unwrapOrDefault()/g' \
             -e 's/std::filesystem::path ([A-Za-z_0-9]+) = ([^;]*(getSaveDir|getConfigDir|getGameDir)\(\)[^;]*);/std::filesystem::path \1 = (\2).toStdPath().unwrapOrDefault();/g' \
             -e 's/, public TextInputDelegate//g' \
             -e 's/\bgd::(vector|string|map|set|unordered_map|unordered_set|list)\b/std::\1/g' \
-            -e 's/dispatchKeyboardMSG\(([^(),]+,[^(),]+,[^(),]+)\)/dispatchKeyboardMSG(\1, 0.0)/g'
+            -e 's/bool dispatchKeyboardMSG\(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat\)/bool dispatchKeyboardMSG(enumKeyCodes key, bool isKeyDown, bool isKeyRepeat, double timestamp)/g' \
+            -e 's/CCKeyboardDispatcher::dispatchKeyboardMSG\(key, isKeyDown, isKeyRepeat\)/CCKeyboardDispatcher::dispatchKeyboardMSG(key, isKeyDown, isKeyRepeat, timestamp)/g' \
+            -e 's/dispatchKeyboardMSG\(enumKeyCodes::KEY_Space, (false|true), (false|true)\)/dispatchKeyboardMSG(enumKeyCodes::KEY_Space, \1, \2, 0.0)/g' \
+            -e 's/createDirectoryAll\(([A-Za-z_0-9]+)\)/createDirectoryAll(\1.string())/g' \
+            -e 's/std::ofstream f\(widePath, std::ios::binary\);/std::ofstream f(path, std::ios::binary);/g' \
+            -e 's/std::ifstream file\(Utils::widen\(path\.string\(\)\)\);/std::ifstream file(path.string());/g' \
+            -e 's/bool init\(GJGameLevel ?\* ?level, bool b1, bool b2\)/bool init(GJGameLevel* level, bool b1)/g' \
+            -e 's/PlayLayer::init\(level, b1, b2\)/PlayLayer::init(level, b1)/g' \
+            -e 's/void processCommands\(float dt\)/void processCommands(float dt, bool isHalfTick, bool isLastTick)/g' \
+            -e 's/GJBaseGameLayer::processCommands\(dt\)/GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick)/g' \
+            -e 's/CCARRAY_FOREACH\(([A-Za-z_0-9]+), ([A-Za-z_0-9]+)\) \{/for (auto \2_it : CCArrayExt<CCObject*>(\1)) { \2 = static_cast<decltype(\2)>(\2_it);/g'
+
+          sed -i -E 's/static void setBackgroundColor\(cocos2d::extension::CCScale9Sprite\* bg\);/static void setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg);\n    static void setBackgroundColor(NineSlice* bg);/' src/utils/utils.hpp
+
+          cat >> src/utils/utils.cpp <<'EOF'
+
+          void Utils::setBackgroundColor(NineSlice* bg) {
+              cocos2d::ccColor3B color = Mod::get()->getSettingValue<cocos2d::ccColor3B>("background_color");
+
+              if (color == ccc3(51, 68, 153))
+                  color = ccc3(255, 255, 255);
+
+              bg->setColor(color);
+          }
+          EOF
 
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
