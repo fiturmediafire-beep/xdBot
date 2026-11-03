@@ -54,11 +54,13 @@ jobs:
             -e 's/GJBaseGameLayer::processCommands\(dt\)/GJBaseGameLayer::processCommands(dt, isHalfTick, isLastTick)/g' \
             -e 's/CCARRAY_FOREACH\(([A-Za-z_0-9]+), ([A-Za-z_0-9]+)\) \{/for (auto \2_it : CCArrayExt<CCObject*>(\1)) { \2 = static_cast<decltype(\2)>(\2_it);/g'
 
-          sed -i -E 's/static void setBackgroundColor\(cocos2d::extension::CCScale9Sprite\* bg\);/static void setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg);\n    static void setBackgroundColor(NineSlice* bg);/' src/utils/utils.hpp
+          sed -i -E 's/static void setBackgroundColor\(cocos2d::extension::CCScale9Sprite\* bg\);/static void setBackgroundColor(cocos2d::extension::CCScale9Sprite* bg);\n    static void setBackgroundColor(geode::NineSlice* bg);/' src/utils/utils.hpp
+
+          sed -i '0,/#include/s//#include <Geode\/ui\/NineSlice.hpp>\n#include/' src/utils/utils.hpp
 
           cat >> src/utils/utils.cpp <<'EOF'
 
-          void Utils::setBackgroundColor(NineSlice* bg) {
+          void Utils::setBackgroundColor(geode::NineSlice* bg) {
               cocos2d::ccColor3B color = Mod::get()->getSettingValue<cocos2d::ccColor3B>("background_color");
 
               if (color == ccc3(51, 68, 153))
