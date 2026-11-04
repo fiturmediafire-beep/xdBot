@@ -92,9 +92,17 @@ class $modify(PauseLayer) {
             return;
         }
 
-        CCNode* menu = this->getChildByID("right-button-menu");
-        menu->addChild(btn);
-        menu->updateLayout();
+CCNode* menu = this->getChildByID("right-button-menu");
+if (!menu) {
+    CCMenu* fallbackMenu = CCMenu::create();
+    fallbackMenu->setID("button"_spr);
+    addChild(fallbackMenu);
+    btn->setPosition({214, 88});
+    fallbackMenu->addChild(btn);
+    return;
+}
+menu->addChild(btn);
+menu->updateLayout();
     }
 };
 
