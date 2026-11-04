@@ -199,9 +199,9 @@ class $modify(EndLevelLayer) {
 		}
 
         if (g.layer) {
-            static_cast<RecordLayer*>(g.layer)->cursorWasHidden = false;
-            static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
-        }
+    static_cast<RecordLayer*>(g.layer)->cursorWasHidden = false;
+    static_cast<RecordLayer*>(g.layer)->onClose(nullptr);
+		}
 
         if (!g.safeMode) return;
 
