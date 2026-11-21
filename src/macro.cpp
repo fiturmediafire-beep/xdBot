@@ -163,6 +163,13 @@ int Macro::save(std::string author, std::string desc, std::string path, bool jso
 
     log::debug("Saving macro to path: {}", path);
 
+    std::error_code ec;
+auto parent = std::filesystem::path(path).parent_path();
+if (!parent.empty())
+    std::filesystem::create_directories(parent, ec);
+if (ec)
+    log::error("Failed to create macro folder {}: {}", parent.string(), ec.message());
+
     g.macro.author = author;
     g.macro.description = desc;
     g.macro.duration = g.macro.inputs.back().frame / g.macro.framerate;
@@ -177,8 +184,10 @@ int Macro::save(std::string author, std::string desc, std::string path, bool jso
     if (!f)
         f.open(path, std::ios::binary);
 
-    if (!f)
-        return 20;
+    if (!f) {
+    log::error("Failed to open macro file: {} (errno {}: {})", path, errno, strerror(errno));
+    return 20;
+    }
 
     std::vector<gdr::FrameFix> frameFixes = g.macro.frameFixes;
 
