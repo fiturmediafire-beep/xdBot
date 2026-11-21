@@ -149,7 +149,8 @@ int Macro::save(std::string author, std::string desc, std::string path, bool jso
     {
     std::filesystem::path p(path);
     if (p.is_relative()) {
-        p = Mod::get()->getSaveDir() / "macros" / p;
+        auto base = Mod::get()->getSaveDir().toStdPath().unwrapOrDefault();
+        p = base / "macros" / p;
         path = p.string();
     }
     }
