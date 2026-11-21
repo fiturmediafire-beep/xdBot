@@ -146,6 +146,14 @@ int Macro::save(std::string author, std::string desc, std::string path, bool jso
 
     std::string extension = json ? ".gdr.json" : ".gdr";
 
+    {
+    std::filesystem::path p(path);
+    if (p.is_relative()) {
+        p = Mod::get()->getSaveDir() / "macros" / p;
+        path = p.string();
+    }
+    }
+
     int iterations = 0;
 
     while (std::filesystem::exists(path + extension)) {
