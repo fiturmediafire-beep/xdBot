@@ -49,6 +49,9 @@ jobs:
             -e 's/\bPopup<>\*/Popup*/g' \
             -e 's/\bPopup<>/PopupCompat<>/g' \
             -e 's/->m_placeholderLabel/->getTextLabel()/g' \
+            -e 's/->getInputNode\(\)->setAllowedChars\(/->setFilter(/g' \
+            -e 's/->getInputNode\(\)->setMaxLabelLength\(/->setMaxCharCount(/g' \
+            -e 's/->getInputNode\(\)->getTextLabel\(\)/->getTextLabel()/g' \
             -e 's/setSettingValue<std::filesystem::path>/setSettingValue<asp::fs::Path>/g' \
             -e 's/openFolder\(Mod::get\(\)->getSettingValue<std::filesystem::path>/openFolder(Mod::get()->getSettingValue<asp::fs::Path>/g' \
             -e 's/file::openFolder\(path\)/file::openFolder(path.string())/g' \
