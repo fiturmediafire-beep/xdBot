@@ -92,8 +92,8 @@ jobs:
         with:
           bindings: 'TheSillyDoggo/bindings'
           build-config: 'Release'
-          combine: true
-          sdk: 'v6.0.0-alpha.1'
+          combine: true, 
+          sdk: 'v6.0.0'
           target: ${{ matrix.config.target }}
 
   package:
